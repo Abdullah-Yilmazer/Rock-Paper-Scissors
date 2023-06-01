@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taş, Kağıt, Makas</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      body {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: center;
+      }
+      div {
+        margin: auto;
+        display: flex;
+      }
+      .canvas {
+        margin: 20px;
+        display: block;
+        max-height: fit-content;
+        max-width: fit-content;
+      }
+      canvas {
+        background-color: rgb(255, 255, 255);
+        border: solid 3px rgb(168, 168, 168);
+      }
+      .restart {
+        position: absolute;
+        z-index: 99;
+        top: 400px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: fit-content;
+        height: fit-content;
+        font-size: xx-large;
+        background-color: orangered;
+        color: wheat;
+        padding: 25px;
+        border-radius: 15px;
+        border: solid 1px orangered;
+        visibility: hidden;
+      }
+      .restart:hover {
+        background-color: rgb(251, 96, 39);
+        border: solid 1px black;
+      }
+      .result {
+        position: absolute;
+        z-index: 99;
+        top: 300px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: fit-content;
+        height: fit-content;
+        font-size: xx-large;
+        color: wheat;
+        padding: 25px;
+        border-radius: 15px;
+        visibility: hidden;
+      }
+      .buttons-div {
+        max-width: min-content;
+        max-height: max-content;
+        flex-wrap: wrap;
+        position: relative;
+        padding: 20px;
+      }
+      .selections-div {
+        max-width: max-content;
+        max-height: max-content;
+        flex-wrap: nowrap;
+      }
+      .selection {
+        position: relative;
+        appearance: none;
+        width: max-content;
+        height: max-content;
+      }
+      .selection::before {
+        content: "";
+        display: block;
+        border: none;
+        outline: none;
+        width: 100px;
+        height: 100px;
+        padding: 15px 0 15px 0;
+        -webkit-filter: drop-shadow(5px 5px 5px #666666);
+        filter: drop-shadow(5px 5px 5px #666666);
+      }
+      .s1::before {
+        background: url(image.png) 0% no-repeat;
+      }
+      .s2::before {
+        background: url(image.png) 50% no-repeat;
+      }
+      .s3::before {
+        background: url(image.png) 100% no-repeat;
+      }
+      .selection:hover.selection::before {
+        -webkit-filter: drop-shadow(5px 5px 25px rgb(0, 0, 0));
+        filter: drop-shadow(5px 5px 25px rgb(0, 0, 0));
+      }
+      .selection:checked.selection::before {
+        -webkit-filter: drop-shadow(5px 5px 25px rgb(0, 0, 0));
+        filter: drop-shadow(5px 5px 25px rgb(0, 0, 0));
+      }
+
+      .numbers-div {
+        flex-wrap: nowrap;
+        margin: 50px;
+        gap: 100px;
+      }
+      .number {
+        position: relative;
+        appearance: none;
+        margin: auto;
+        font-size: xx-large;
+        max-width: max-content;
+        max-width: max-content;
+      }
+      .number::before {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%);
+        content: attr(value);
+        text-align: center;
+        width: 80px;
+        height: min-content;
+        border: #666666 solid 2px;
+        background-color: #d4dabc;
+      }
+      .number:hover.number::before {
+        border: #292828 solid 3px;
+        background-color: #9a9c92;
+      }
+      .number:checked.number::before {
+        border: #292828 solid 4px;
+        background-color: rgb(117, 117, 117);
+      }
+      .money-div {
+        width: 200px;
+        height: 100px;
+      }
+      .money-text {
+        margin: auto;
+        font-size: xx-large;
+        font-weight: 500;
+      }
+      .money-text::after {
+        content: "$";
+      }
+      .start-div {
+        width: 300px;
+        height: 100px;
+      }
+      .start {
+        margin: auto;
+        width: 250px;
+        height: 70px;
+        background-color: #23f735;
+        color: #000000;
+        font-size: 300%;
+        font-weight: 400;
+        border: none;
+      }
+      .start:hover {
+        background-color: #1b9c26;
+        color: rgb(54, 54, 54);
+      }
+      .pale::after {
+        position: relative;
+        top: -380px;
+        left: 0;
+        content: "";
+        width: 100%;
+        min-height: 400px;
+        background: rgba(83, 82, 82, 0.208);
+      }
+      .start:disabled {
+        color: #666666;
+        background-color: #70db79;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas">
+      <p class="result" id="result">Result</p>
+      <button id="restart" class="restart">Yeniden başlat</button>
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="buttons-div" id="buttons-div">
+      <div class="selections-div">
+        <input type="radio" name="selections" id="selections" value="0" class="selection s1" checked />
+        <input type="radio" name="selections" id="selections" value="1" class="selection s2" />
+        <input type="radio" name="selections" id="selections" value="2" class="selection s3" />
+      </div>
+      <div class="numbers-div">
+        <input type="radio" name="numbers" id="numbers" value="50" class="number" checked />
+        <input type="radio" name="numbers" id="numbers" value="100" class="number" />
+        <input type="radio" name="numbers" id="numbers" value="500" class="number" />
+        <input type="radio" name="numbers" id="numbers" value="1000" class="number" />
+        <input type="radio" name="numbers" id="numbers" value="5000" class="number" />
+      </div>
+      <div class="money-div">
+        <p class="money-text" id="money-text"></p>
+      </div>
+      <div class="start-div">
+        <input type="button" value="Başlat" id="start" class="start" />
+      </div>
+    </div>
+  </body>
+  <script>
+    const ctx = canvas.getContext("2d");
+    CANVAS_WIDTH = canvas.width = 500;
+    CANVAS_HEIGHT = canvas.height = 600;
+    var numberOfEnemy = 99;
+    if (window.innerWidth >= 770) {
+      CANVAS_WIDTH = canvas.width = 600;
+      CANVAS_HEIGHT = canvas.height = 600;
+      numberOfEnemy = numberOfEnemy * 3;
+    }
+    const speed = 1;
+    var enemiesArray = [];
+    var i = 0;
+    var fps = 10;
+    var interval;
+    const minLength = 100000;
+    const image = new Image();
+    image.src = "./image.png";
+    image.onload = () => {
+      class enemy {
+        constructor() {
+          this.width = 25;
+          this.height = 25;
+          this.x = Math.random() * (canvas.width - this.width);
+          this.y = Math.random() * (canvas.height - this.height);
+          this.speedx = Math.random() * 2 - 1;
+          this.speedy = Math.random() * 2 - 1;
+          this.swidth = image.width / 3;
+          this.sheight = image.height;
+          i++;
+          this.i = i;
+          this.rand = i % 3;
+          //0 taş - 1 makas - 2 kağıt
+          this.sx = this.swidth * this.rand;
+          this.sy = 0;
+        }
+        update() {
+          this.enemyMove();
+        }
+        draw() {
+          ctx.drawImage(image, this.sx, this.sy, this.swidth, this.sheight, this.x, this.y, this.width, this.height);
+        }
+        enemyMove() {
+          var nearestEnemy = enemiesArray[0];
+          enemiesArray.forEach((enemy) => {
+            var tas_makas = this.rand == 0 && enemy.rand == 1;
+            var makas_kagit = this.rand == 1 && enemy.rand == 2;
+            var kagit_tas = this.rand == 2 && enemy.rand == 0;
+            if (
+              this.x < enemy.x + enemy.width &&
+              this.x + this.width > enemy.x &&
+              this.y < enemy.y + enemy.height &&
+              this.y + this.height > enemy.y
+            ) {
+              if (tas_makas || makas_kagit || kagit_tas) {
+                if (this.rand == 0) {
+                  enemy.rand = this.rand;
+                  enemy.sx = enemy.swidth * enemy.rand;
+                } else if (this.rand == 1) {
+                  enemy.rand = this.rand;
+                  enemy.sx = enemy.swidth * enemy.rand;
+                } else if (this.rand == 2) {
+                  enemy.rand = this.rand;
+                  enemy.sx = enemy.swidth * enemy.rand;
+                }
+              }
+            }
+          });
+          var canvasUp = 0;
+          var canvasBottom = canvas.height - this.height;
+          var canvasLeft = 0;
+          var canvasRight = canvas.width - this.width;
+          if (this.y < canvasUp || this.y > canvasBottom) {
+            this.speedy = -this.speedy;
+          }
+          if (this.x < canvasLeft || this.x > canvasRight) {
+            this.speedx = -this.speedx;
+          }
+
+          this.x += this.speedx;
+          this.y += this.speedy;
+        }
+      }
+
+      function creatEnemies() {
+        enemiesArray = [];
+        for (let i = 0; i < numberOfEnemy; i++) {
+          enemiesArray.push(new enemy());
+        }
+      }
+      creatEnemies();
+
+      function updateGame() {
+      money_text.innerHTML = money;
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        var tas = 0,
+          kagit = 0,
+          makas = 0;
+        enemiesArray.forEach((enemy) => {
+          enemy.update();
+          enemy.draw();
+          if (enemy.rand == 0) {
+            tas++;
+          } else if (enemy.rand == 1) {
+            makas++;
+          } else if (enemy.rand == 2) {
+            kagit++;
+          }
+          if (tas == numberOfEnemy || makas == numberOfEnemy || kagit == numberOfEnemy) {
+            restart.style.visibility = "visible";
+            result.style.visibility = "visible";
+            result.innerHTML = "Kaybettiniz";
+            result.style.backgroundColor = "red";
+            if (selection == enemiesArray[0].rand) {
+              money += number*2;
+              money_text.innerHTML = money
+              result.innerHTML = "Kazandınız";
+              result.style.backgroundColor = "green";
+            }
+            stopGame()
+          }
+        });
+      }
+      function startGame() {
+        interval = setInterval(updateGame, fps);
+      }
+      function stopGame() {
+        clearInterval(interval);
+      }
+
+      //----------------------------------------------------//
+      const selections = document.querySelectorAll("#selections");
+      const numbers = document.querySelectorAll("#numbers");
+      const money_text = document.getElementById("money-text");
+      const start = document.getElementById("start");
+      const inputs = document.querySelectorAll("input");
+      const restart = document.getElementById("restart");
+      const result = document.getElementById("result");
+      var selection = 0;
+      var number = 50;
+      var money = 300;
+      selections.forEach((event) => {
+        event.addEventListener("click", () => {
+          selection = event.value;
+        });
+      });
+      numbers.forEach((event) => {
+        event.addEventListener("click", () => {
+          number = event.value;
+        });
+      });
+      start.addEventListener("click", () => {
+        inputs.forEach((event) => {
+          event.disabled = true;
+        });
+        money -= number;
+        startGame();
+      });
+      restart.addEventListener("click", () => {
+        stopGame();
+        creatEnemies();
+        updateGame();
+        inputs.forEach((event) => {
+          event.disabled = false;
+        });
+        restart.style.visibility = "hidden";
+        result.style.visibility = "hidden";
+      });
+      return updateGame();
+    };
+  </script>
+</html>
